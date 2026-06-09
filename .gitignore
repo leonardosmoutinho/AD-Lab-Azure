@@ -1,0 +1,5 @@
+# Não subir senhas ou dados sensíveis
+*.env
+senhas.txt
+passwords.txt
+*.rdp
