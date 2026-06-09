@@ -1,36 +1,36 @@
-# Active Directory Lab no Azure
+# Active Directory Lab on Azure
 
-Lab prático de Active Directory no Azure com simulações de ataque e defesa, documentado com screenshots passo a passo.
+Hands-on Active Directory lab built on Azure, with attack and defense simulations, documented step by step with screenshots.
 
-## Topologia
+## Topology
 
-| Recurso | Valor |
+| Resource | Value |
 |---|---|
-| Domínio | corp.local |
+| Domain | corp.local |
 | Forest | corp.local |
 | Resource Group | ad-lab-rg |
-| Região | East US 2 |
+| Region | East US 2 |
 | VNet | DC01-vnet (10.0.0.0/16) |
 | DC01 — Domain Controller | 10.0.0.4 |
 | WKS01 — Workstation | 10.0.0.5 |
 
-## Usuários do Domínio
+## Domain Users
 
-| Usuário | Grupo | Papel |
+| Username | Group | Role |
 |---|---|---|
-| john.doe | Security_Team | Funcionário |
-| jane.smith | Finance_Department | Funcionário |
-| hacker.local | Domain Admins | Simula atacante |
+| john.doe | Security_Team | Employee |
+| jane.smith | Finance_Department | Employee |
+| hacker.local | Domain Admins | Simulates attacker |
 
 ---
 
-## Fase 1 — Infraestrutura Azure
+## Phase 1 — Azure Infrastructure
 
-Criação do Resource Group, VNet e VM DC01 no Azure.
+Created the Resource Group, VNet, and DC01 VM on Azure.
 
-![Resource Group criado](screenshots/fase1-azure/01-resource-group-criado.png)
+![Resource Group created](screenshots/fase1-azure/01-resource-group-criado.png)
 
-![VNet criada](screenshots/fase1-azure/02-vnet-criada.png)
+![VNet created](screenshots/fase1-azure/02-vnet-criada.png)
 
 ![DC01 review create](screenshots/fase1-azure/03-dc01-review-create.png)
 
@@ -38,69 +38,69 @@ Criação do Resource Group, VNet e VM DC01 no Azure.
 
 ---
 
-## Fase 2 — Active Directory
+## Phase 2 — Active Directory
 
-Instalação do AD DS e promoção da DC01 a Domain Controller com forest `corp.local`.
+Installed AD DS role and promoted DC01 to Domain Controller with forest `corp.local`.
 
 ![Server Manager Dashboard](screenshots/fase2-ad/01-server-manager-dashboard.png)
 
-![AD DS instalado](screenshots/fase2-ad/02-ad-ds-instalado.png)
+![AD DS installed](screenshots/fase2-ad/02-ad-ds-instalado.png)
 
-![AD DS instalado dashboard](screenshots/fase2-ad/03-ad-ds-instalado-dashboard.png)
+![AD DS installed dashboard](screenshots/fase2-ad/03-ad-ds-instalado-dashboard.png)
 
-![Get-ADDomain confirmado](screenshots/fase2-ad/04-get-addomain-confirmado.png)
-
----
-
-## Fase 3 — Usuários e Grupos
-
-Criação das OUs `_Employees`, `_Admins`, `_Workstations` e dos usuários/grupos do domínio.
-
-![OUs criadas](screenshots/fase3-usuarios/01-ous-criadas.png)
-
-![Usuários e grupos criados](screenshots/fase3-usuarios/02-usuarios-grupos-criados.png)
-
-![Usuários confirmados PowerShell](screenshots/fase3-usuarios/03-usuarios-confirmados-powershell.png)
+![Get-ADDomain confirmed](screenshots/fase2-ad/04-get-addomain-confirmado.png)
 
 ---
 
-## Fase 4 — VM Cliente (WKS01)
+## Phase 3 — Users and Groups
 
-Criação da WKS01 (Windows 11 Pro) na mesma VNet, configuração do DNS e ingresso no domínio.
+Created OUs `_Employees`, `_Admins`, `_Workstations` and domain users/groups.
+
+![OUs created](screenshots/fase3-usuarios/01-ous-criadas.png)
+
+![Users and groups created](screenshots/fase3-usuarios/02-usuarios-grupos-criados.png)
+
+![Users confirmed via PowerShell](screenshots/fase3-usuarios/03-usuarios-confirmados-powershell.png)
+
+---
+
+## Phase 4 — Client VM (WKS01)
+
+Created WKS01 (Windows 11 Pro) on the same VNet, configured DNS, and joined the domain.
 
 ![WKS01 deployment complete](screenshots/fase4-wks01/01-wks01-deployment-complete.png)
 
 ![WKS01 overview](screenshots/fase4-wks01/02-wks01-overview.png)
 
-![DNS configurado para DC01](screenshots/fase4-wks01/03-wks01-dns-configurado.png)
+![DNS configured to point to DC01](screenshots/fase4-wks01/03-wks01-dns-configurado.png)
 
-![Domínio confirmado](screenshots/fase4-wks01/04-wks01-dominio-confirmado.png)
+![Domain join confirmed](screenshots/fase4-wks01/04-wks01-dominio-confirmado.png)
 
-**Comandos usados:**
+**Commands used:**
 ```powershell
-# Configurar DNS apontando para DC01
+# Set DNS to point to DC01
 Set-DnsClientServerAddress -InterfaceIndex 6 -ServerAddresses "10.0.0.4"
 
-# Ingressar no domínio
+# Join the domain
 Add-Computer -DomainName "corp.local" -Credential "CORP\azureuser" -Restart
 
-# Confirmar domínio
+# Confirm domain membership
 (Get-WmiObject Win32_ComputerSystem).Domain
 ```
 
 ---
 
-## Fase 5 — Testes de Ataque e Defesa
+## Phase 5 — Attack and Defense Tests
 
-### Teste 1 — Enumeração de usuários do domínio
+### Test 1 — Domain User Enumeration
 
-Executado `net user /domain` na WKS01, consultando a DC01 e listando todos os usuários.
+Ran `net user /domain` from WKS01, querying DC01 and listing all domain users.
 
-![Enumeração net user /domain](screenshots/fase5-testes/01-enumeracao-net-user-domain.png)
+![net user /domain enumeration](screenshots/fase5-testes/01-enumeracao-net-user-domain.png)
 
-### Teste 2 — Admin Share (acesso lateral)
+### Test 2 — Admin Share (lateral movement)
 
-Acesso ao `\\DC01\C$` com credenciais de domínio — simula movimento lateral de um atacante.
+Accessed `\\DC01\C$` using domain admin credentials — simulates lateral movement by an attacker.
 
 ![Admin Share DC01](screenshots/fase5-testes/02-admin-share-dc01.png)
 
@@ -108,9 +108,9 @@ Acesso ao `\\DC01\C$` com credenciais de domínio — simula movimento lateral d
 net use \\DC01\C$ /user:CORP\azureuser Lab@Azure2024!
 ```
 
-### Teste 3 — Event Viewer (monitoramento na DC01)
+### Test 3 — Event Viewer (monitoring on DC01)
 
-Logs de segurança na DC01 com **1.227 eventos de Logon (Event ID 4624)** registrados.
+Reviewed security logs on DC01. Filtered by **Event ID 4624 (Successful Logon)**: **1,227 events** recorded.
 
 ![Event Viewer Security Logs](screenshots/fase5-testes/03-event-viewer-security-logs.png)
 
@@ -120,14 +120,14 @@ Logs de segurança na DC01 com **1.227 eventos de Logon (Event ID 4624)** regist
 
 ## Status
 
-- [x] Fase 1 — Infraestrutura Azure
-- [x] Fase 2 — Active Directory
-- [x] Fase 3 — Usuários e Grupos
-- [x] Fase 4 — VM Cliente (WKS01)
-- [x] Fase 5 — Testes de Ataque e Defesa
+- [x] Phase 1 — Azure Infrastructure
+- [x] Phase 2 — Active Directory
+- [x] Phase 3 — Users and Groups
+- [x] Phase 4 — Client VM (WKS01)
+- [x] Phase 5 — Attack and Defense Tests
 
 ---
 
-## Documentação completa
+## Full Documentation
 
-Ver [docs/documentacao.md](docs/documentacao.md) para detalhes técnicos, comandos e observações.
+See [docs/documentation.md](docs/documentation.md) for technical details, commands, and observations.
