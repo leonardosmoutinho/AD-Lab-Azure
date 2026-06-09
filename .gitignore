@@ -3,3 +3,7 @@
 senhas.txt
 passwords.txt
 *.rdp
+
+# macOS
+.DS_Store
+**/.DS_Store
